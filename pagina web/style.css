@@ -1,0 +1,16 @@
+#menu{
+  height: 80px;
+  background-color: #e3f2fd;
+}
+.logo-utf{
+  height: 100x;
+  width: 150px;
+}
+
+.item-menu{
+  color: rgb(49, 143, 205 );
+}
+
+.item-menu:hover{
+   background: rgb(115, 202, 227);
+}

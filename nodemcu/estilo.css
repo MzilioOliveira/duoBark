@@ -1,0 +1,46 @@
+/*Estilos Gerais*/
+
+.container {
+  width: 50%;
+  margin: 0 auto;
+}
+
+/*Estilos formulario*/
+
+.areaPesquisa {
+  border-radius: 5px;
+  /*background-color: #B5B5B5;
+  padding: 10px;*/
+}
+
+input {
+  padding: 10px;
+  margin: 8px 0;
+  border: 1px solid black;
+  border-radius: 4px;
+}
+
+input[type=text] {
+  width: 15%;
+}
+
+input[type=submit] {
+  width: 20%;
+  background-color: #222222;
+  color: #fff;
+  cursor: pointer;
+}
+
+/*Estilo tabela*/
+
+table {
+  border-collapse: collapse;
+  width: 100%;
+  margin-top: 10px;
+}
+
+table th {
+  background-color: #222222;
+  color: white;
+  height: 30px;
+}
