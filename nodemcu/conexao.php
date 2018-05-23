@@ -1,10 +1,10 @@
 <?php
   //tenta conectar no banco
   try{
-      $HOST = "localhost"; //nome do host
+      $HOST = "ec2-18-191-120-124.us-east-2.compute.amazonaws.com"; //nome do host
       $BANCO = "bdnodemcu"; //nome do banco
       $USUARIO = "root";
-      $SENHA = "";
+      $SENHA = "mysql123456";
       
       //função para conectar
       $PDO = new PDO("mysql:host=" . $HOST . ";dbname=" . $BANCO . ";charset=utf8", $USUARIO, $SENHA);
