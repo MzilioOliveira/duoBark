@@ -1,7 +1,7 @@
 <?php
   //tenta conectar no banco
   try{
-      $HOST = "18.191.120.124"; //nome do host
+      $HOST = "localhost"; //nome do host
       $BANCO = "bdnodemcu"; //nome do banco
       $USUARIO = "root";
       $SENHA = "mysql123456";
