@@ -1,7 +1,7 @@
 <?php
   //tenta conectar no banco
   try{
-      $HOST = "ec2-18-191-120-124.us-east-2.compute.amazonaws.com"; //nome do host
+      $HOST = "18.191.120.124"; //nome do host
       $BANCO = "bdnodemcu"; //nome do banco
       $USUARIO = "root";
       $SENHA = "mysql123456";
