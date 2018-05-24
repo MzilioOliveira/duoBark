@@ -1,18 +1,25 @@
 #include <ESP8266WiFi.h>
 #include <Wire.h>
 #include <SD.h>
-#include "RTClib.h"
+#include <WiFiUdp.h>
+#include <TimeLib.h>
 
 //Pin where is the CS pin of the sd adapter
 #define CS_PIN  D8
 
 //Netowrk, Password and Host IP definition 
-const char* ssid     = "";
-const char* password = "";
-const char* host = "";
+const char ssid[] = "";
+const char pass[] = "";
+const char host[] = "";
+
+//NTP Server
+static const char ntpServerName[] = "pool.ntp.br";
+
+//Set the time zone
+const int timeZone = -3;
 
 //MPU6050 Slave Device Address
-const uint8_t MPU6050SlaveAddress = 0x69;
+const uint8_t MPU6050SlaveAddress = 0x68;
 
 //Select SDA and SCL pins for I2C communication 
 const uint8_t scl = D1;
@@ -33,35 +40,46 @@ const uint8_t MPU6050_REGISTER_ACCEL_CONFIG =  0x1C;
 const uint8_t MPU6050_REGISTER_FIFO_EN      =  0x23;
 const uint8_t MPU6050_REGISTER_INT_ENABLE   =  0x38;
 const uint8_t MPU6050_REGISTER_ACCEL_XOUT_H =  0x3B;
-const uint8_t MPU6050_REGISTER_SIGNAL_PATH_RESET  = 0x69;
+const uint8_t MPU6050_REGISTER_SIGNAL_PATH_RESET  = 0x68;
 
 //Declaration of functions
-void MPU6050_Init();
-void Read_RawValue(uint8_t deviceAddress, uint8_t regAddress);
-void saveDataSD();
-void sdSetUp();
-void rtcSetUp();
 void wifiSetUp();
+void Read_RawValue(uint8_t deviceAddress, uint8_t regAddress);
+void MPU6050_Init();
+void sdSetUp();
+void saveDataSD();
+void piscaLed();
+time_t getNtpTime();
+void sendNTPpacket(IPAddress &address);
 
-//MPU6050 global variables
+//MPU6050 variables
 int16_t AccelX, AccelY, AccelZ, GyroX, GyroY, GyroZ;
 double Ax, Ay, Az, Gx, Gy, Gz;
 
-//LM35 global variables
+//LM35 variables
 int analog;
 double Tlm35;
 
-//SD global variables
+//SD variables
 String dataString;
 File dataFile;
 
-//RTC char for days of the week
-char daysOfTheWeek[7][12] = {"Domingo", "Segunda", "Terça", "Quarta", "Quinta", "Sexta", "Sábado"};
+//Udp variable
+WiFiUDP Udp;
 
-//RTC object
-RTC_DS3231 rtc;
+//NTP time is in the first 48 bytes of message
+const int NTP_PACKET_SIZE = 48;
+
+//Buffer to hold incoming & outgoing packets
+byte packetBuffer[NTP_PACKET_SIZE];
+
+// local port to listen for UDP packets
+unsigned int localPort = 8888;
 
 void setup(){
+  //OUTPUT Led
+  pinMode(LED_BUILTIN, OUTPUT);
+  
   Serial.begin(115200);
   delay(10);
 
@@ -74,16 +92,12 @@ void setup(){
 
   //SD card start
   sdSetUp();
-
-  //RTC start
-  rtcSetUp();
 }
 
-void loop() {
-  
+void loop() {  
   Read_RawValue(MPU6050SlaveAddress, MPU6050_REGISTER_ACCEL_XOUT_H);
   
-  // divide each with their sensitivity scale factor
+  //Divide each with their sensitivity scale factor
   Ax = (double)AccelX/AccelScaleFactor;
   Ay = (double)AccelY/AccelScaleFactor;
   Az = (double)AccelZ/AccelScaleFactor;
@@ -93,16 +107,13 @@ void loop() {
   analog = analogRead(17);
   Tlm35 = analog*0.322265625;
 
-  DateTime now = rtc.now();
-
-  dataString = String(Ax) + "," + String(Ay) + "," + String(Az) + "," + String(Gx) + "," + String(Gy) + "," + String(Gz) + "," + String(Tlm35) 
-  + "," + String(now.year(), DEC) + "," + String(now.month(), DEC) + "," + String(now.day(), DEC) + "," + String(daysOfTheWeek[now.dayOfTheWeek()])
-  + "," + String(now.hour(), DEC) + "," + String(now.minute(), DEC) + "," + String(now.second(), DEC);
+  dataString = String(Ax) + "," + String(Ay) + "," + String(Az) + "," + String(Gx) + "," + String(Gy) + "," + String(Gz) + "," + String(Tlm35)
+  + "," + String(hour()) + "," + String(minute()) + "," + String(second()) + "," + String(year()) + "," + String(month()) + "," + String(day());
 
   Serial.print("Conectando com ");
   Serial.println(host);
   
-  // Usando a classe WiFiClient para criar a conexão TCP
+  //Using the WiFiClient class to create the TCP connection
   WiFiClient client;
   const int httpPort = 80;
   if (!client.connect(host, httpPort)) {
@@ -110,32 +121,31 @@ void loop() {
     return;
   }
   
-    //Criando a URL para as requisições 
-    String url = "/nodemcu/salvar.php?";
-    url += "Ax=";
-    url += Ax;
-    url += "&Ay=";
-    url += Ay;
-    url += "&Az=";
-    url += Az;
-    url += "&Gx=";
-    url += Gx;
-    url += "&Gy=";
-    url += Gy;
-    url += "&Gz=";
-    url += Gz;
-    url += "&Tlm35=";
-    url += Tlm35;
+  //Creating the URL for the requisitions 
+  String url = "/salvar.php?";
+  url += "Ax=";
+  url += Ax;
+  url += "&Ay=";
+  url += Ay;
+  url += "&Az=";
+  url += Az;
+  url += "&Gx=";
+  url += Gx;
+  url += "&Gy=";
+  url += Gy;
+  url += "&Gz=";
+  url += Gz;
+  url += "&Tlm35=";
+  url += Tlm35;
   
   Serial.print("Requisitando URL: ");
   Serial.print(url);
   
-  // This will send the request to the server
-  client.print(String("GET ") + url + " HTTP/1.1\r\n" +
-               "Host: " + host + "\r\n" + 
-               "Connection: close\r\n\r\n");
+  //This will send the request to the server
+  client.print(String("GET ") + url + " HTTP/1.1\r\n" + "Host: " + host + "\r\n" + "Connection: close\r\n\r\n");
+  Serial.println();
 
-  //calcula o tempo que demorou a solicitação
+  //Calculates the time it took for the order
   unsigned long timeout = millis();
   while (client.available() == 0) {
     if (millis() - timeout > 5000) {
@@ -145,13 +155,14 @@ void loop() {
     }
   }  
 
-  // captura oque retornou do servidor
+  //Captures what returned from the server
   while(client.available()){
     String line = client.readStringUntil('\r');
-    
+    piscaLed();
     if(line.indexOf("salvo com sucesso!") != -1){
       Serial.println();
       Serial.println("Requisição salva com sucesso!"); 
+      piscaLed();
     }else if(line.indexOf("salvo com sucesso!") != -1){
       Serial.println();
       Serial.println("Erro ao salvar dados no servidor!\n");
@@ -159,12 +170,33 @@ void loop() {
     
   }
   saveDataSD();
-  Serial.println("Conexão fechada\n");
+  Serial.println("Conexão fechada.\n");
   
-  delay(3000);  
+  delay(1000);  
 }
 
-// read all 14 register
+void wifiSetUp(){
+  //Starts the connection to the wifi network
+  Serial.print("Conectando com ");
+  Serial.println(ssid);
+  /* Explicitly set the ESP8266 to be a WiFi-client, otherwise, it by default,
+     would try to act as both a client and an access-point and could cause
+     network-issues with your other WiFi-devices on your WiFi-network. */
+  WiFi.mode(WIFI_STA);
+  WiFi.begin(ssid, pass);
+  
+  while (WiFi.status() != WL_CONNECTED){
+    delay(500);
+    Serial.print(".");
+  }
+  Serial.println();
+  Serial.println("WiFi conectado");  
+  Udp.begin(localPort);
+  setSyncProvider(getNtpTime);
+  setSyncInterval(300);
+}
+
+//Read all 14 register
 void Read_RawValue(uint8_t deviceAddress, uint8_t regAddress){
   Wire.beginTransmission(deviceAddress);
   Wire.write(regAddress);
@@ -185,9 +217,8 @@ void I2C_Write(uint8_t deviceAddress, uint8_t regAddress, uint8_t data){
   Wire.endTransmission();
 }
 
-// configure MPU6050
+//Configure MPU6050
 void MPU6050_Init(){
-  delay(150);
   I2C_Write(MPU6050SlaveAddress, MPU6050_REGISTER_SMPLRT_DIV, 0x07);
   I2C_Write(MPU6050SlaveAddress, MPU6050_REGISTER_PWR_MGMT_1, 0x01);
   I2C_Write(MPU6050SlaveAddress, MPU6050_REGISTER_PWR_MGMT_2, 0x00);
@@ -200,21 +231,7 @@ void MPU6050_Init(){
   I2C_Write(MPU6050SlaveAddress, MPU6050_REGISTER_USER_CTRL, 0x00);
 }
 
-void saveDataSD(){
-  delay(150);
-  dataFile = SD.open("datalog.csv", FILE_WRITE);
-  if(dataFile){
-    dataFile.println(dataString);
-    dataFile.close();
-    Serial.println("Os dados foram escritos com sucesso no cartão SD!\n");
-  }else{
-    Serial.println("Falha ao abrir o arquivo datalog.csv"); 
-  }
-  
-}
-
-void sdSetUp(){
-  delay(150); 
+void sdSetUp(){ 
   pinMode(CS_PIN, OUTPUT);
   if(!SD.begin(CS_PIN)){
     Serial.println("Falha, cartão SD não encontrado.");
@@ -224,32 +241,70 @@ void sdSetUp(){
   }
 }
 
-void rtcSetUp(){
-  delay(150); 
-  if(!rtc.begin()){
-    Serial.println("Falha, módulo RTC não encontrado.");
-    return;
+void saveDataSD(){
+  dataFile = SD.open("datalog.csv", FILE_WRITE);
+  if(dataFile){
+    dataFile.println(dataString);
+    dataFile.close();
+    Serial.println("Dados escritos com sucesso no cartão SD!");
   }else{
-    Serial.println("Módulo RTC inicializado.\n");
+    Serial.println("Falha ao abrir o arquivo datalog.csv."); 
   }
 }
 
-void wifiSetUp(){
-  //Starts the connection to the wifi network
-  Serial.print("Conectando com ");
-  Serial.println(ssid);
-  /* Explicitly set the ESP8266 to be a WiFi-client, otherwise, it by default,
-     would try to act as both a client and an access-point and could cause
-     network-issues with your other WiFi-devices on your WiFi-network. */
-  WiFi.mode(WIFI_STA);
-  WiFi.begin(ssid, password);
-  
-  while (WiFi.status() != WL_CONNECTED){
-    delay(500);
-    Serial.print(".");
+time_t getNtpTime(){
+  //NTP server's ip address
+  IPAddress ntpServerIP; 
+
+  //Discard any previously received packets
+  while (Udp.parsePacket() > 0) ;
+  //Get a random server from the pool
+  WiFi.hostByName(ntpServerName, ntpServerIP);
+  sendNTPpacket(ntpServerIP);
+  uint32_t beginWait = millis();
+  while (millis() - beginWait < 1500) {
+    int size = Udp.parsePacket();
+    if (size >= NTP_PACKET_SIZE) {
+      Serial.println("Receive NTP Response");
+      Udp.read(packetBuffer, NTP_PACKET_SIZE);//Read packet into the buffer
+      unsigned long secsSince1900;
+      //Convert four bytes starting at location 40 to a long integer
+      secsSince1900 =  (unsigned long)packetBuffer[40] << 24;
+      secsSince1900 |= (unsigned long)packetBuffer[41] << 16;
+      secsSince1900 |= (unsigned long)packetBuffer[42] << 8;
+      secsSince1900 |= (unsigned long)packetBuffer[43];
+      return secsSince1900 - 2208988800UL + timeZone * SECS_PER_HOUR;
+    }
   }
-  Serial.println("WiFi conectado");  
-  Serial.print("Endereço IP: ");
-  Serial.println(WiFi.localIP());
+  Serial.println("No NTP Response :-(");
+  return 0;//Return 0 if unable to get the time
 }
 
+//Send an NTP request to the time server at the given address
+void sendNTPpacket(IPAddress &address){
+  //Set all bytes in the buffer to 0
+  memset(packetBuffer, 0, NTP_PACKET_SIZE);
+  //Initialize values needed to form NTP request
+  //(See URL above for details on the packets)
+  packetBuffer[0] = 0b11100011;//LI, Version, Mode
+  packetBuffer[1] = 0;//Stratum, or type of clock
+  packetBuffer[2] = 6;//Polling Interval
+  packetBuffer[3] = 0xEC;//Peer Clock Precision
+  //8 bytes of zero for Root Delay & Root Dispersion
+  packetBuffer[12] = 49;
+  packetBuffer[13] = 0x4E;
+  packetBuffer[14] = 49;
+  packetBuffer[15] = 52;
+  //All NTP fields have been given values, now
+  //You can send a packet requesting a timestamp:
+  Udp.beginPacket(address, 123); //NTP requests are to port 123
+  Udp.write(packetBuffer, NTP_PACKET_SIZE);
+  Udp.endPacket();
+}
+
+void piscaLed(){
+  digitalWrite(LED_BUILTIN, LOW);
+  delay(100);
+  digitalWrite(LED_BUILTIN, HIGH);
+  delay(100);
+}
