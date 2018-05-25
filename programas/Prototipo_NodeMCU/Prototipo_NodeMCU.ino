@@ -8,9 +8,9 @@
 #define CS_PIN  D8
 
 //Netowrk, Password and Host IP definition 
-const char ssid[] = "FARMIN";
-const char pass[] = "3x4m3.farmin";
-const char host[] = "18.191.120.124";
+const char ssid[] = "";
+const char pass[] = "";
+const char host[] = "";
 
 //NTP Server
 static const char ntpServerName[] = "pool.ntp.br";
@@ -64,7 +64,7 @@ double Tlm35;
 String dataString;
 File dataFile;
 
-//Udp variable
+//Udp object
 WiFiUDP Udp;
 
 //NTP time is in the first 48 bytes of message
@@ -81,7 +81,7 @@ void setup(){
   pinMode(LED_BUILTIN, OUTPUT);
   
   Serial.begin(115200);
-  delay(10);
+  delay(100);
 
   //Wifi start
   wifiSetUp();
@@ -117,7 +117,7 @@ void loop() {
   WiFiClient client;
   const int httpPort = 80;
   if (!client.connect(host, httpPort)) {
-    Serial.println("Falha na conexão\n");
+    Serial.println("Falha na conexão!\n");
     return;
   }
   
@@ -189,7 +189,7 @@ void wifiSetUp(){
     Serial.print(".");
   }
   Serial.println();
-  Serial.println("WiFi conectado");  
+  Serial.println("WiFi conectado.");  
   Udp.begin(localPort);
   setSyncProvider(getNtpTime);
   setSyncInterval(300);
@@ -233,10 +233,10 @@ void MPU6050_Init(){
 void sdSetUp(){ 
   pinMode(CS_PIN, OUTPUT);
   if(!SD.begin(CS_PIN)){
-    Serial.println("Falha, cartão SD não encontrado.");
+    Serial.println("Falha, cartão SD não encontrado.\n");
     return;
   }else{
-    Serial.println("Cartão inicializado."); 
+    Serial.println("Cartão inicializado.\n"); 
   }
 }
 
