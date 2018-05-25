@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <meta http-equiv="refresh" content="9; url=index.php">
   <title>Monitoramento DuoBark</title>
 
   <link rel="stylesheet" href="bootstrap.min.css">
@@ -23,19 +24,15 @@
     include('conexao.php');
 
     if($_SERVER['REQUEST_METHOD'] == 'POST'){
-      //echo("<h1> Recebeu a data: " . $_POST['data'] . "</h1>");
       $dataPesquisa = $_POST['data'];
 
       $dataArray = explode("/", $dataPesquisa);
       $dataPesquisa = $dataArray[1] . "-" .$dataArray[0];
 
-      $sql = "SELECT * FROM tbdados WHERE data_hora LIKE '%" . $dataPesquisa . "%'"; //LIKE '%2018-05-04' 
+      $sql = "SELECT * FROM tbdados WHERE data_hora LIKE '%" . $dataPesquisa . "%'";
     }else{
-      //echo("<h1> Não recebeu nada, mostra o mês atual </h1>");
       $dataAtual = date('Y-m');
       
-      //echo "Mes atual " . $dataAtual;
-
       $sql = "SELECT * FROM tbdados WHERE data_hora LIKE '%" . $dataAtual . "%'";
     }
 

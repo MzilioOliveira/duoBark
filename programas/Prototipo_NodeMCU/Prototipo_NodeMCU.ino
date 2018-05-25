@@ -8,9 +8,9 @@
 #define CS_PIN  D8
 
 //Netowrk, Password and Host IP definition 
-const char ssid[] = "";
-const char pass[] = "";
-const char host[] = "";
+const char ssid[] = "FARMIN";
+const char pass[] = "3x4m3.farmin";
+const char host[] = "18.191.120.124";
 
 //NTP Server
 static const char ntpServerName[] = "pool.ntp.br";
@@ -143,7 +143,6 @@ void loop() {
   
   //This will send the request to the server
   client.print(String("GET ") + url + " HTTP/1.1\r\n" + "Host: " + host + "\r\n" + "Connection: close\r\n\r\n");
-  Serial.println();
 
   //Calculates the time it took for the order
   unsigned long timeout = millis();
