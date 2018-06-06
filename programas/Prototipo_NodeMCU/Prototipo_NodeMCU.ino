@@ -7,9 +7,9 @@
 #define CS_PIN  D8
 
 // Netowrk, Password and Host IP definition 
-const char* ssid = "SUDOTEC PRIV.";
-const char* password = "sudotecpriv!@";
-const char* host = "18.191.120.124";
+const char* ssid = "";
+const char* password = "";
+const char* host = "";
 
 // MPU6050 Slave Device Address
 const uint8_t MPU6050SlaveAddress = 0x69;
