@@ -4,76 +4,55 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta http-equiv="X-UA-Compatible" content="ie=edge">
-  <meta http-equiv="refresh" content="9; url=index.php">
   <title>Monitoramento DuoBark</title>
 
-  <link rel="stylesheet" href="bootstrap.min.css">
   <link rel="stylesheet" href="estilo.css">
+
+  <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
 </head>
 <body>
+
+<?php 
+	include('conexao.php');
+
+	$sql = "SELECT TIME(data_hora) AS data_hora, Tlm35 FROM tbdados ORDER BY id DESC LIMIT 4;";
+
+  $stmt = $PDO->prepare($sql);
+	$stmt->execute();
+	
+  $chartValues = [];
+	while($linha = $stmt->fetch(PDO::FETCH_ASSOC)){
+    $chartValues[] = "'".$linha['data_hora']."', ".$linha['Tlm35'];
+  }
+?> 
+
 <div class="container">
-
-  <div class="areaPesquisa">
-    <form action="" method="POST">
-      <input type="text" name="data" placeholder="mês/ano">
-      <input type="submit" name="submit" value="Buscar">
-    </form>
-  </div>
-
-  <?php
-    include('conexao.php');
-
-    if($_SERVER['REQUEST_METHOD'] == 'POST'){
-      $dataPesquisa = $_POST['data'];
-
-      $dataArray = explode("/", $dataPesquisa);
-      $dataPesquisa = $dataArray[1] . "-" .$dataArray[0];
-
-      $sql = "SELECT * FROM tbdados WHERE data_hora LIKE '%" . $dataPesquisa . "%'";
-    }else{
-      $dataAtual = date('Y-m');
-      
-      $sql = "SELECT * FROM tbdados WHERE data_hora LIKE '%" . $dataAtual . "%'";
-    }
-
-    $stmt = $PDO->prepare($sql);
-    $stmt->execute();
-
-    echo "<table border=\"1\">";
-
-    echo "<tr>
-    <th>AcX</th>
-    <th>AcY</th>
-    <th>AcZ</th>
-    <th>Gx</th>
-    <th>Gy</th>
-    <th>Gz</th>
-    <th>TempLM35</th>
-    <th>Data/Hora</th>
-    </tr>";
-    
-    while($linha = $stmt->fetch(PDO::FETCH_OBJ)){
-
-      $timestamp = strtotime($linha->data_hora);
-      $dataTabela = date('d/m/Y H:i:s', $timestamp);
-
-      echo "<tr>";
-      echo "<td>" . $linha->Ax . "</td>";
-      echo "<td>" . $linha->Ay . "</td>";
-      echo "<td>" . $linha->Ax . "</td>";
-      echo "<td>" . $linha->Gx . "</td>";
-      echo "<td>" . $linha->Gy . "</td>";
-      echo "<td>" . $linha->Gz . "</td>";
-      echo "<td>" . $linha->Tlm35 . "</td>";
-      echo "<td>" . $dataTabela . "</td>";
-      echo "</tr>";
-    }
-
-    echo "</table>";
-  ?>
+  <div class="row">
+		<div class="col-md-6">
+    <div id="curve_chart" style="width: auto; height: 400px"></div>
+    </div>
+	</div>
 </div>
-    <script src="jquery-3.2.1.slim.min.js"></script>
-    <script src="popper.min.js"></script>
-    <script src="bootstrap.min.js"></script>
+
+<script type="text/javascript">
+      google.charts.load('current', {'packages':['corechart']});
+      google.charts.setOnLoadCallback(drawChart);
+
+      function drawChart() {
+        var data = google.visualization.arrayToDataTable([
+          ['Hora', 'Temperatura'],
+          [<?php echo join('],[',$chartValues) ?>],
+        ]);
+
+        var options = {
+          curveType: 'function',
+          legend: { position: 'bottom' }
+        };
+
+        var chart = new google.visualization.LineChart(document.getElementById('curve_chart'));
+
+        chart.draw(data, options);
+      }
+    </script>
 </body>
 </html>

@@ -12,9 +12,9 @@
   //query
   $sql = "INSERT INTO tbdados (Ax, Ay, Az, Gx, Gy, Gz, Tlm35) VALUES (:Ax, :Ay, :Az, :Gx, :Gy, :Gz, :Tlm35)";
 
+  //statement
   $stmt = $PDO->prepare($sql);
 
-  //passa o valor da variavel para a tabela
   $stmt->bindParam(':Ax', $Ax);
   $stmt->bindParam(':Ay', $Ay);
   $stmt->bindParam(':Az', $Az);
@@ -25,7 +25,7 @@
 
   if($stmt->execute()){
     echo "salvo com sucesso!";
-  } else {
+  }else{
     echo "erro ao salvar!";
   }
 ?>

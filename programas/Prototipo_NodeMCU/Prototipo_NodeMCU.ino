@@ -7,7 +7,7 @@
 #define CS_PIN  D8
 
 // Netowrk, Password and Host IP definition 
-const char* ssid     = "";
+const char* ssid = "";
 const char* password = "";
 const char* host = "";
 
