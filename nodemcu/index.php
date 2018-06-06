@@ -6,54 +6,75 @@
   <meta http-equiv="X-UA-Compatible" content="ie=edge">
   <meta http-equiv="refresh" content="9; url=index.php">
   <title>Monitoramento DuoBark</title>
-
-  <link rel="stylesheet" href="estilo.css">
-
-  <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+  <link rel="shortcut icon" href="favicon.png">
+  
+  <script src="Chart.bundle.min.js"></script>
+	<script src="utils.js"></script>
+	<style>
+		canvas{
+			-moz-user-select: none;
+			-webkit-user-select: none;
+			-ms-user-select: none;
+		}
+	</style>
 </head>
-<body>
 
+<body>
 <?php 
 	include('conexao.php');
 
-	$sql = "SELECT TIME(data_hora) AS data_hora, Tlm35 FROM tbdados ORDER BY id DESC LIMIT 4;";
+  $sql = "SELECT TIME(data_hora) AS data_hora, Tlm35 FROM tbdados ORDER BY id DESC LIMIT 4;";
 
   $stmt = $PDO->prepare($sql);
 	$stmt->execute();
 	
-  $chartValues = [];
+  $chartData_hora = [];
+  $chartTemp = [];
+
 	while($linha = $stmt->fetch(PDO::FETCH_ASSOC)){
-    $chartValues[] = "'".$linha['data_hora']."', ".$linha['Tlm35'];
+
+    $chartData_hora[] = "'".$linha['data_hora']."'";
+    $chartTemp[] = $linha['Tlm35'];
   }
 ?> 
 
-<div class="container">
-  <div class="row">
-		<div class="col-md-6">
-    <div id="curve_chart" style="width: auto; height: 400px"></div>
-    </div>
+	<div style="width:75%;">
+		<canvas id="canvas"></canvas>
 	</div>
-</div>
+	<script>
+		var config = {
+			type: 'line',
+			data: {
+        labels: [<?php echo join(",",$chartData_hora)?>],
+				datasets: [{
+					label: 'Temperatura',
+					backgroundColor: window.chartColors.red,
+					borderColor: window.chartColors.red,
+          data: [<?php echo join(",",$chartTemp)?>],
+					fill: false,
+				}]
+			},
+			options: {
+				responsive: true,
+				title: {
+					display: true
+				},
+				scales: {
+					yAxes: [{
+						ticks: {
+							min: -10,
+							max: 100
+						}
+					}]
+				}
+			}
+		};
 
-<script type="text/javascript">
-      google.charts.load('current', {'packages':['corechart']});
-      google.charts.setOnLoadCallback(drawChart);
-
-      function drawChart() {
-        var data = google.visualization.arrayToDataTable([
-          ['Hora', 'Temperatura'],
-          [<?php echo join('],[',$chartValues) ?>],
-        ]);
-
-        var options = {
-          curveType: 'function',
-          legend: { position: 'bottom' }
-        };
-
-        var chart = new google.visualization.LineChart(document.getElementById('curve_chart'));
-
-        chart.draw(data, options);
-      }
-    </script>
+		window.onload = function() {
+			var ctx = document.getElementById('canvas').getContext('2d');
+			window.myLine = new Chart(ctx, config);
+		};
+	</script>
 </body>
+
 </html>
