@@ -1,10 +1,5 @@
 #include <ESP8266WiFi.h>
 #include <Wire.h>
-#include <SD.h>
-#include "RTClib.h"
-
-// Pin where is the CS pin of the sd adapter
-#define CS_PIN  D8
 
 // Netowrk, Password and Host IP definition 
 const char* ssid = "";
@@ -12,7 +7,7 @@ const char* password = "";
 const char* host = "";
 
 // MPU6050 Slave Device Address
-const uint8_t MPU6050SlaveAddress = 0x69;
+const uint8_t MPU6050SlaveAddress = 0x68;
 
 // Select SDA and SCL pins for I2C communication 
 const uint8_t scl = D1;
@@ -33,14 +28,12 @@ const uint8_t MPU6050_REGISTER_ACCEL_CONFIG =  0x1C;
 const uint8_t MPU6050_REGISTER_FIFO_EN      =  0x23;
 const uint8_t MPU6050_REGISTER_INT_ENABLE   =  0x38;
 const uint8_t MPU6050_REGISTER_ACCEL_XOUT_H =  0x3B;
-const uint8_t MPU6050_REGISTER_SIGNAL_PATH_RESET  = 0x69;
+const uint8_t MPU6050_REGISTER_SIGNAL_PATH_RESET  = 0x68;
 
 // Declaration of functions
 void wifiSetUp();
 void MPU6050_Init();
 void Read_RawValue(uint8_t deviceAddress, uint8_t regAddress);
-void sdSetUp();
-void saveDataSD();
 
 // MPU6050 global variables
 int16_t AccelX, AccelY, AccelZ, GyroX, GyroY, GyroZ;
@@ -49,16 +42,6 @@ double Ax, Ay, Az, Gx, Gy, Gz;
 // LM35 global variables
 int analog;
 double Tlm35;
-
-// SD objects
-String dataString;
-File dataFile;
-
-//RTC char for days of the week
-char daysOfTheWeek[7][12] = {"Domingo", "Segunda", "Terça", "Quarta", "Quinta", "Sexta", "Sábado"};
-
-//RTC object
-RTC_DS3231 rtc;
 
 void setup(){
   Serial.begin(115200);
@@ -70,9 +53,6 @@ void setup(){
   //I2C start
   Wire.begin(sda, scl);
   MPU6050_Init();
-
-  //SD card start
-  sdSetUp();
 }
 
 void loop() {
@@ -89,27 +69,6 @@ void loop() {
   analog = analogRead(17);
   Tlm35 = analog*0.322265625;
 
-  DateTime now = rtc.now();
-
-  Serial.print(now.year(), DEC);
-  Serial.print('/');
-  Serial.print(now.month(), DEC);
-  Serial.print('/');
-  Serial.print(now.day(), DEC);
-  Serial.print(" (");
-  Serial.print(daysOfTheWeek[now.dayOfTheWeek()]);
-  Serial.print(") ");
-  Serial.print(now.hour(), DEC);
-  Serial.print(':');
-  Serial.print(now.minute(), DEC);
-  Serial.print(':');
-  Serial.print(now.second(), DEC);
-  Serial.println();
-
-  dataString = String(Ax) + "," + String(Ay) + "," + String(Az) + "," + String(Gx) + "," + String(Gy) + "," + String(Gz) + "," + String(Tlm35) 
-  + "," + String(now.year(), DEC) + "," + String(now.month(), DEC) + "," + String(now.day(), DEC) + "," + String(daysOfTheWeek[now.dayOfTheWeek()])
-  + "," + String(now.hour(), DEC) + "," + String(now.minute(), DEC) + "," + String(now.second(), DEC);
-
   Serial.print("Conectando com ");
   Serial.println(host);
   
@@ -122,7 +81,7 @@ void loop() {
   }
   
     // Criando a URL para as requisições 
-    String url = "/salvar.php?";
+    String url = "/nodemcu/salvar.php?";
     url += "Ax=";
     url += Ax;
     url += "&Ay=";
@@ -168,7 +127,6 @@ void loop() {
       Serial.println("Erro ao salvar dados no servidor!");
     }
   }
-  saveDataSD();
   Serial.println("Conexão fechada.\n");
   //Serial.println();
   delay(1000);  
@@ -226,27 +184,4 @@ void MPU6050_Init(){
   I2C_Write(MPU6050SlaveAddress, MPU6050_REGISTER_INT_ENABLE, 0x01);
   I2C_Write(MPU6050SlaveAddress, MPU6050_REGISTER_SIGNAL_PATH_RESET, 0x00);
   I2C_Write(MPU6050SlaveAddress, MPU6050_REGISTER_USER_CTRL, 0x00);
-}
-
-void sdSetUp(){
-  delay(150); 
-  pinMode(CS_PIN, OUTPUT);
-  if(!SD.begin(CS_PIN)){
-    Serial.println("Cartão SD não encontrado.\n");
-    return;
-  }else{
-    Serial.println("Cartão SD inicializado.\n"); 
-  }
-}
-
-void saveDataSD(){
-  delay(150);
-  dataFile = SD.open("datalog.csv", FILE_WRITE);
-  if(dataFile){
-    dataFile.println(dataString);
-    dataFile.close();
-    Serial.println("Dados escritos com sucesso no cartão SD.");
-  }else{
-    Serial.println("Falha ao abrir o arquivo datalog.csv"); 
-  } 
 }
