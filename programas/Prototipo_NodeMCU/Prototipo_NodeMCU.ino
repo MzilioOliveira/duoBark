@@ -81,7 +81,7 @@ void loop() {
   }
   
     // Criando a URL para as requisições 
-    String url = "/nodemcu/salvar.php?";
+    String url = "/dao/salvar.php?";
     url += "Ax=";
     url += Ax;
     url += "&Ay=";
