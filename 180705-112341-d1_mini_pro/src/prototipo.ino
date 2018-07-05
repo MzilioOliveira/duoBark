@@ -59,7 +59,7 @@ void loop() {
   
   Read_RawValue(MPU6050SlaveAddress, MPU6050_REGISTER_ACCEL_XOUT_H);
   
-  // divide each with their sensitivity scale factor
+  // Divide each with their sensitivity scale factor
   Ax = (double)AccelX/AccelScaleFactor;
   Ay = (double)AccelY/AccelScaleFactor;
   Az = (double)AccelZ/AccelScaleFactor;
@@ -72,7 +72,7 @@ void loop() {
   Serial.print("Conectando com ");
   Serial.println(host);
   
-  // Usando a classe WiFiClient para criar a conexão TCP
+  // Using the WiFiClient class for TCP connection
   WiFiClient client;
   const int httpPort = 80;
   if (!client.connect(host, httpPort)) {
@@ -80,8 +80,8 @@ void loop() {
     return;
   }
   
-    // Criando a URL para as requisições 
-    String url = "/dao/salvar.php?";
+    // Create URL for request
+    String url = "/servidor/dao/salvar.php?";
     url += "Ax=";
     url += Ax;
     url += "&Ay=";
@@ -105,7 +105,7 @@ void loop() {
                "Host: " + host + "\r\n" + 
                "Connection: close\r\n\r\n");
 
-  // Calcula o tempo que demorou a solicitação
+  // Calculates the time it took to request
   unsigned long timeout = millis();
   while (client.available() == 0) {
     if (millis() - timeout > 5000) {
@@ -115,7 +115,7 @@ void loop() {
     }
   }  
 
-  // Captura o que retornou do servidor
+  // Capture what returned from the server
   while(client.available()){
     String line = client.readStringUntil('\r');
     
@@ -128,7 +128,6 @@ void loop() {
     }
   }
   Serial.println("Conexão fechada.\n");
-  //Serial.println();
   delay(1000);  
 }
 
@@ -150,7 +149,7 @@ void wifiSetUp(){
   Serial.println("WiFi conectado.");  
 }
 
-// read all 14 register
+// Read all 14 register
 void Read_RawValue(uint8_t deviceAddress, uint8_t regAddress){
   Wire.beginTransmission(deviceAddress);
   Wire.write(regAddress);
@@ -171,7 +170,7 @@ void I2C_Write(uint8_t deviceAddress, uint8_t regAddress, uint8_t data){
   Wire.endTransmission();
 }
 
-// configure MPU6050
+// Configure MPU6050
 void MPU6050_Init(){
   delay(150);
   I2C_Write(MPU6050SlaveAddress, MPU6050_REGISTER_SMPLRT_DIV, 0x07);
