@@ -3,7 +3,7 @@
       $HOST = "localhost";
       $BANCO = "bdnodemcu";
       $USUARIO = "root";
-      $SENHA = "";
+      $SENHA = "mysql123456";
       
       //função para conectar
       $PDO = new PDO("mysql:host=" . $HOST . ";dbname=" . $BANCO . ";charset=utf8", $USUARIO, $SENHA);
