@@ -8,11 +8,10 @@
   <link rel="shortcut icon" href="../images/favicon.png">
 	<link rel="stylesheet" href="../css/bootstrap.min.css">
   <link rel="stylesheet" href="../css/dashboard.css">
-  
 </head>
 <body>
     <nav class="navbar navbar-light fixed-top flex-md-nowrap p-0 shadow" style="background-color: #e3f2fd;">
-      <a class="navbar-brand col-sm-3 col-md-2 mr-0" href="#">duoBark Dashboard</a>
+      <a class="navbar-brand col-sm-3 col-md-2 mr-0" href="#" id="menu-principal">Menu Principal</a>
       <a href="http://www.duobark.com/" target="_blank"><img src="../images/logo-duo-2-5.png" id="logo-duo"></a>
     </nav>
 
@@ -33,6 +32,14 @@
                   Posicionamento
                 </a>
               </li>
+              <div id="creditos">
+                <li>
+                  <p>
+                    By Matheus Zilio -
+                    <a href="http://www.linkedin.com/in/mz-oliveira" target="_blank"> <span data-feather="linkedin"></span></a>
+                  </p>
+                </li>
+              </div>
             </ul>
           </div>
         </nav>
