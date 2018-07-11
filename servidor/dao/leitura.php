@@ -1,7 +1,7 @@
 <?php
   if(!function_exists('returnGraficoData_Hora')){
     function returnGraficoData_Hora(){  
-      include('../dao/conexao.php');
+      include('conexao.php');
       $sql = "SELECT TIME(data_hora) AS data_hora FROM tbdados ORDER BY id DESC LIMIT 4;";
       $stmt = $PDO->prepare($sql);
       $stmt->execute();
@@ -16,7 +16,7 @@
 
   if(!function_exists('returnGraficoTemp')){
     function returnGraficoTemp(){  
-      include('../dao/conexao.php');
+      include('conexao.php');
       $sql = "SELECT Tlm35 FROM tbdados ORDER BY id DESC LIMIT 4;";
       $stmt = $PDO->prepare($sql);
       $stmt->execute();
@@ -31,7 +31,7 @@
 
   if(!function_exists('tabelaDados')){
     function tabelaDados(){
-      include('../dao/conexao.php');
+      include('conexao.php');
       $sql = "SELECT * FROM tbdados ORDER BY id DESC LIMIT 15;";
       $stmt = $PDO->prepare($sql);
       $stmt->execute();
@@ -49,6 +49,24 @@
         echo "<td>" . $linha->Gz . "</td>";
         echo "</tr>";
       }
+    }
+  }
+
+  if(!function_exists('teste')){
+    function teste(){  
+      require_once('conexao.php');
+      $stmt = $PDO->prepare('SELECT Gx FROM tbdados ORDER BY RAND() LIMIT 1');
+        if ($stmt->execute()){
+          $teste = $stmt->fetchObject();
+          echo json_encode($teste);
+        }
+    }
+  }
+
+  if(isset($_POST['action']) && !empty($_POST['action'])) {
+    $action = $_POST['action'];
+    switch($action) {
+        case 'test' : teste();break;
     }
   }
 ?>
