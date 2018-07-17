@@ -8,7 +8,7 @@ function atualizar(){
     }
   });
 }
-setInterval("atualizar()", 100);
+setInterval("atualizar()", 10000);
 $(function() {
   atualizar();
 });
