@@ -8,6 +8,7 @@
   <link rel="shortcut icon" href="../images/favicon.png">
 	<link rel="stylesheet" href="../css/bootstrap.min.css">
   <link rel="stylesheet" href="../css/dashboard.css">
+  <script src="../js/refresh-dados.js"></script>
 </head>
 <body>
     <nav class="navbar navbar-light fixed-top flex-md-nowrap p-0 shadow" style="background-color: #e3f2fd;">
@@ -80,8 +81,8 @@
 	  <!-- Bootstrap core JavaScript
     ================================================== -->
     <!-- Placed at the end of the document so the pages load faster -->
-    <script src="../js/jquery-3.3.1.slim.min.js"></script>
-    <script>window.jQuery || document.write('<script src="../js/jquery-3.3.1.slim.min.js"><\/script>')</script>
+    <script src="../js/jquery-3.3.1.min.js"></script>
+    <script>window.jQuery || document.write('<script src="../js/jquery-3.3.1.min.js"><\/script>')</script>
     <script src="../js/popper.min.js"></script>
     <script src="../js/bootstrap.min.js"></script>
 
