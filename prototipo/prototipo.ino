@@ -2,9 +2,9 @@
 #include <Wire.h>
 
 // Netowrk, Password and Host IP definition 
-const char* ssid = "";
-const char* password = "";
-const char* host = "";
+const char* ssid = "AP 203";
+const char* password = "leavemealone";
+const char* host = "192.168.0.109";
 
 // MPU6050 Slave Device Address
 const uint8_t MPU6050SlaveAddress = 0x68;
@@ -119,16 +119,15 @@ void loop() {
   while(client.available()){
     String line = client.readStringUntil('\r');
     
-    if(line.indexOf("salvo com sucesso!") != -1){
+    if(line.indexOf("Salvo com sucesso!") != -1){
       Serial.println();
       Serial.println("Requisição salva com sucesso!"); 
-    }else if(line.indexOf("salvo com sucesso!") != -1){
+    }else if(line.indexOf("Salvo com sucesso!") != -1){
       Serial.println();
       Serial.println("Erro ao salvar dados no servidor!");
     }
   }
   Serial.println("Conexão fechada.\n");
-  delay(1000);  
 }
 
 void wifiSetUp(){
@@ -172,7 +171,7 @@ void I2C_Write(uint8_t deviceAddress, uint8_t regAddress, uint8_t data){
 
 // Configure MPU6050
 void MPU6050_Init(){
-  delay(150);
+  delay(10);
   I2C_Write(MPU6050SlaveAddress, MPU6050_REGISTER_SMPLRT_DIV, 0x07);
   I2C_Write(MPU6050SlaveAddress, MPU6050_REGISTER_PWR_MGMT_1, 0x01);
   I2C_Write(MPU6050SlaveAddress, MPU6050_REGISTER_PWR_MGMT_2, 0x00);

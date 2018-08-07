@@ -4,11 +4,11 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <meta http-equiv="refresh" content="6">
   <title>Monitoramento DuoBark</title>
   <link rel="shortcut icon" href="../images/favicon.png">
 	<link rel="stylesheet" href="../css/bootstrap.min.css">
   <link rel="stylesheet" href="../css/dashboard.css">
-
   <script src="../js/Chart.bundle.min.js"></script>
 	<script src="../js/utils.js"></script>
 	<style>
@@ -107,7 +107,7 @@
           returnGraficoData_Hora();
         ?>],
 				datasets: [{
-					label: 'Temperatura',
+					label: 'Temperatura / 5min',
 					backgroundColor: window.chartColors.blue,
 					borderColor: window.chartColors.blue,
           data: [<?php 

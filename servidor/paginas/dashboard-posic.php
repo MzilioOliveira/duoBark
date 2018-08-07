@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <meta http-equiv="refresh" content="6">
   <title>Monitoramento DuoBark</title>
   <link rel="shortcut icon" href="../images/favicon.png">
 	<link rel="stylesheet" href="../css/bootstrap.min.css">
@@ -50,7 +51,6 @@
           </div>
           <div class="my-4 w-100" style="width:900px; height:380px;">
             Animação de posicionamento aqui
-            <div id="teste"></div>
           </div>
           <h2>Tabela de Dados</h2>
           <div class="table-responsive">

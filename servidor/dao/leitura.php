@@ -51,22 +51,4 @@
       }
     }
   }
-
-  if(!function_exists('teste')){
-    function teste(){  
-      require_once('conexao.php');
-      $stmt = $PDO->prepare('SELECT Gx FROM tbdados ORDER BY RAND() LIMIT 1');
-        if ($stmt->execute()){
-          $teste = $stmt->fetchObject();
-          echo json_encode($teste);
-        }
-    }
-  }
-
-  if(isset($_POST['action']) && !empty($_POST['action'])) {
-    $action = $_POST['action'];
-    switch($action) {
-        case 'test' : teste();break;
-    }
-  }
 ?>

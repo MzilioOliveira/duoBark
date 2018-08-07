@@ -24,8 +24,8 @@
   $stmt->bindParam(':Tlm35', $Tlm35);
 
   if($stmt->execute()){
-    echo "salvo com sucesso!";
+    echo "Salvo com sucesso!";
   }else{
-    echo "erro ao salvar!";
+    echo "Erro ao salvar!";
   }
 ?>
