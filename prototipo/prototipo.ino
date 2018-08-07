@@ -2,9 +2,9 @@
 #include <Wire.h>
 
 // Netowrk, Password and Host IP definition 
-const char* ssid = "AP 203";
-const char* password = "leavemealone";
-const char* host = "192.168.0.109";
+const char* ssid = "";
+const char* password = "";
+const char* host = "";
 
 // MPU6050 Slave Device Address
 const uint8_t MPU6050SlaveAddress = 0x68;
