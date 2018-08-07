@@ -81,7 +81,7 @@ void loop() {
   }
   
     // Create URL for request
-    String url = "/servidor/dao/salvar.php?";
+    String url = "/dao/salvar.php?";
     url += "Ax=";
     url += Ax;
     url += "&Ay=";
